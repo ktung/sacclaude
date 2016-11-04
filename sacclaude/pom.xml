@@ -57,6 +57,11 @@
             <version>${appengine.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-storage</artifactId>
+            <version>0.4.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -116,9 +121,6 @@
               <groupId>com.google.appengine</groupId>
               <artifactId>gcloud-maven-plugin</artifactId>
               <version>${gcloud.plugin.version}</version>
-              <configuration>
-                <set_default>true</set_default>
-              </configuration>
             </plugin>
         </plugins>
     </build>

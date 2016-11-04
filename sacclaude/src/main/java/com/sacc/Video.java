@@ -9,6 +9,7 @@ public class Video {
     private String name;
     private int duration;
     private FORMAT format;
+    private boolean isCompressed;
 
     public String getName() {
         return name;
@@ -35,4 +36,11 @@ public class Video {
     }
 
 
+    public boolean isCompressed() {
+        return isCompressed;
+    }
+
+    public void setCompressed(boolean compressed) {
+        isCompressed = compressed;
+    }
 }
