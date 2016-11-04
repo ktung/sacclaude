@@ -3,7 +3,6 @@ package com.sacc;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.repackaged.com.google.gson.Gson;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +18,6 @@ import java.util.logging.Logger;
 public class BronzeServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(BronzeWorker.class.getName());
 
-
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
@@ -33,7 +31,6 @@ public class BronzeServlet extends HttpServlet {
         queue.add(TaskOptions.Builder.withUrl("/bronzeworker").param("video", video));
 
         response.sendRedirect("/");
-
 
     }
 }

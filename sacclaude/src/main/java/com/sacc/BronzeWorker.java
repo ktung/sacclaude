@@ -1,5 +1,6 @@
 package com.sacc;
 
+
 import com.google.cloud.storage.Acl;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobInfo;
@@ -57,6 +58,9 @@ public class BronzeWorker extends HttpServlet {
                 break;
             case OGG:
                 msPerSecondVideo = 200;
+                break;
+            case FLV:
+                msPerSecondVideo = 100;
                 break;
         }
 

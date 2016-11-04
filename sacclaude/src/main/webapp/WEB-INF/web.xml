@@ -12,6 +12,10 @@
     <servlet-name>BronzeWorker</servlet-name>
     <servlet-class>com.sacc.BronzeWorker</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>ConversionServlet</servlet-name>
+    <servlet-class>com.sacc.servlet.RequestConversionServlet</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>BronzeServlet</servlet-name>
     <url-pattern>/bronze</url-pattern>
@@ -20,7 +24,11 @@
     <servlet-name>BronzeWorker</servlet-name>
     <url-pattern>/bronzeworker</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>ConversionServlet</servlet-name>
+    <url-pattern>/requestConversion</url-pattern>
+  </servlet-mapping>
   <welcome-file-list>
-    <welcome-file>index.html</welcome-file>
+    <welcome-file>convert.html</welcome-file>
   </welcome-file-list>
 </web-app>
