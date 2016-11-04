@@ -1,6 +1,6 @@
 package com.sacc;
 
-enum FORMAT {AVI, MPEG4, MKV, OGG};
+enum FORMAT {AVI, MPEG4, MKV, OGG, FLV};
 /**
  * Created by djoé on 28/10/2016.
  */

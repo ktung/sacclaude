@@ -43,6 +43,16 @@
             <artifactId>jstl</artifactId>
             <version>1.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>gcloud-java-datastore</artifactId>
+            <version>0.2.8</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>gcloud-java-storage</artifactId>
+            <version>0.2.8</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>

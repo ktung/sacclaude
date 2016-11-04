@@ -47,6 +47,9 @@ public class BronzeWorker extends HttpServlet {
             case OGG:
                 msPerSecondVideo = 200;
                 break;
+            case FLV:
+                msPerSecondVideo = 100;
+                break;
         }
 
         long t1 = System.currentTimeMillis();
