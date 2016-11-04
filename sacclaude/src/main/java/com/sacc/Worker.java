@@ -1,12 +1,14 @@
 package com.sacc;
 
 
+import com.google.cloud.datastore.*;
 import com.google.cloud.storage.Acl;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.gson.Gson;
+import com.sacc.entity.Video;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -14,21 +16,22 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 /**
  * Created by djoé on 28/10/2016.
  */
-public class BronzeWorker extends HttpServlet {
-    private static final Logger log = Logger.getLogger(BronzeWorker.class.getName());
+public class Worker extends HttpServlet {
+    private static final Logger log = Logger.getLogger(Worker.class.getName());
     private static final String BUCKET_NAME = "sacclaude.appspot.com";
     private static Storage storage = null;
+    private static Datastore datastore = null;
 
     @Override
     public void init() {
         storage = StorageOptions.defaultInstance().service();
+        datastore = DatastoreOptions.defaultInstance().service();
     }
 
 
@@ -75,7 +78,7 @@ public class BronzeWorker extends HttpServlet {
         long t2 = System.currentTimeMillis();
         log.info("Sleep time : " + (t2 - t1) + "ms");
 
-        video.setCompressed(true);
+        video.setConverted(true);
 
 
         List<Acl> acls = new ArrayList<>();
@@ -86,8 +89,24 @@ public class BronzeWorker extends HttpServlet {
                         BlobInfo.builder(BUCKET_NAME, video.getName()).acl(acls).build(),
                         json.toJson(video, Video.class).getBytes());
 
+        if(havePendingVideo(video.getUserId()))
+
         // return the public download link
         response.getWriter().print(blob.mediaLink());
 
+    }
+
+    private boolean havePendingVideo(String userId) {
+
+        // Retrieve the last 10 visits from the datastore, ordered by timestamp.
+        Query<Entity> query = Query.entityQueryBuilder().kind("video")
+                .filter(StructuredQuery.PropertyFilter.eq("userId", userId))
+                .orderBy(StructuredQuery.OrderBy.asc("date")).build();
+        QueryResults<Entity> results = datastore.run(query);
+
+        if(results.hasNext()) {
+            Entity.
+            results.next().key();
+        }
     }
 }

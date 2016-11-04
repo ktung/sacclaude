@@ -10,7 +10,7 @@
   </servlet>
   <servlet>
     <servlet-name>BronzeWorker</servlet-name>
-    <servlet-class>com.sacc.BronzeWorker</servlet-class>
+    <servlet-class>com.sacc.Worker</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>ConversionServlet</servlet-name>
