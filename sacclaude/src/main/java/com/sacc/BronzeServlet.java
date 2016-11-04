@@ -15,8 +15,6 @@ import java.io.IOException;
  * Created by djoé on 28/10/2016.
  */
 public class BronzeServlet extends HttpServlet {
-
-
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
@@ -29,7 +27,6 @@ public class BronzeServlet extends HttpServlet {
         queue.add(TaskOptions.Builder.withUrl("/bronzeworker").param("video", video));
 
         response.sendRedirect("/");
-
 
     }
 }

@@ -2,6 +2,7 @@ package com.sacc;
 
 
 import com.google.appengine.repackaged.com.google.gson.Gson;
+import com.sacc.entity.FORMAT;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -11,7 +12,7 @@ import java.sql.Time;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.sacc.FORMAT.*;
+import static com.sacc.entity.FORMAT.*;
 
 
 /**
