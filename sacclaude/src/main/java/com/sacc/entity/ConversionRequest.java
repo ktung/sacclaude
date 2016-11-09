@@ -17,6 +17,8 @@ public class ConversionRequest {
 
     private List<FORMAT> convertTypes;
 
+    private byte[] video;
+
     public ConversionRequest(){
         convertTypes = new ArrayList<>();
     }
@@ -74,5 +76,13 @@ public class ConversionRequest {
                 ", mailAddress='" + mailAddress + '\'' +
                 ", convertTypes=" + convertTypes +
                 '}';
+    }
+
+    public byte[] getVideo() {
+        return video;
+    }
+
+    public void setVideo(byte[] video) {
+        this.video = video;
     }
 }

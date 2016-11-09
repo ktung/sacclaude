@@ -13,6 +13,7 @@ import com.google.cloud.storage.StorageOptions;
 import com.google.gson.Gson;
 import com.googlecode.objectify.ObjectifyService;
 import com.sacc.entity.SLA;
+import com.sacc.entity.STATUS;
 import com.sacc.entity.User;
 import com.sacc.entity.Video;
 
@@ -95,11 +96,17 @@ public class Worker extends HttpServlet {
         List<Acl> acls = new ArrayList<>();
         acls.add(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
 
+        storage.delete(video.getBlobId());
+
         Blob blob =
                 storage.create(
                         BlobInfo.builder(BUCKET_NAME, video.getName()).acl(acls).build(),
                         videoData);
 
+
+        video.setStatus(STATUS.DONE);
+
+        ObjectifyService.ofy().save().entity(video).now();
         if(video.getSla() != SLA.BRONZE)
             unpendingVideo(video);
 
@@ -114,19 +121,22 @@ public class Worker extends HttpServlet {
                 .load()
                 .type(Video.class)
                 .ancestor(video.getUser())
+                .filter("status", STATUS.PENDING)
                 .order("-date")
                 .limit(1).list();
 
         if(result.size() == 0) {
             return false;
         }
+        Video v = result.get(0);
 
+        v.setStatus(STATUS.CONVERTING);
 
-
+        ObjectifyService.ofy().save().entity(v).now();
         Gson json = new Gson();
 
         Queue queue = QueueFactory.getQueue("ar-gold-queue");
-        queue.add(TaskOptions.Builder.withUrl("/worker").param("video", json.toJson(result.get(0), Video.class)));
+        queue.add(TaskOptions.Builder.withUrl("/worker").param("video", json.toJson(v, Video.class)));
 
         return true;
 
