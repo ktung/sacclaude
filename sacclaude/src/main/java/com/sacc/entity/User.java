@@ -12,6 +12,12 @@ public class User {
 
     private SLA sla;
 
+    public User()
+    {
+        id = "NonMemberUser";
+        sla = SLA.BRONZE;
+    }
+
     public String getId() {
         return id;
     }

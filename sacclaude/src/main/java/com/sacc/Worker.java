@@ -1,6 +1,9 @@
 package com.sacc;
 
 
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.cloud.datastore.*;
 import com.google.cloud.storage.Acl;
 import com.google.cloud.storage.Blob;
@@ -8,6 +11,9 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.gson.Gson;
+import com.googlecode.objectify.ObjectifyService;
+import com.sacc.entity.SLA;
+import com.sacc.entity.User;
 import com.sacc.entity.Video;
 
 import javax.servlet.http.HttpServlet;
@@ -32,6 +38,8 @@ public class Worker extends HttpServlet {
     public void init() {
         storage = StorageOptions.defaultInstance().service();
         datastore = DatastoreOptions.defaultInstance().service();
+        ObjectifyService.register(Video.class);
+        ObjectifyService.register(User.class);
     }
 
 
@@ -45,6 +53,9 @@ public class Worker extends HttpServlet {
 
         log.info("Video descriptor : " + videoStr);
         Video video = json.fromJson(videoStr, Video.class);
+
+
+        byte[] videoData =storage.get(video.getBlobId()).content();
 
         long msPerSecondVideo = 1000;
 
@@ -87,26 +98,37 @@ public class Worker extends HttpServlet {
         Blob blob =
                 storage.create(
                         BlobInfo.builder(BUCKET_NAME, video.getName()).acl(acls).build(),
-                        json.toJson(video, Video.class).getBytes());
+                        videoData);
 
-        if(havePendingVideo(video.getUserId()))
+        if(video.getSla() != SLA.BRONZE)
+            unpendingVideo(video);
 
         // return the public download link
         response.getWriter().print(blob.mediaLink());
 
     }
 
-    private boolean havePendingVideo(String userId) {
+    private boolean unpendingVideo(Video video) {
 
-        // Retrieve the last 10 visits from the datastore, ordered by timestamp.
-        Query<Entity> query = Query.entityQueryBuilder().kind("video")
-                .filter(StructuredQuery.PropertyFilter.eq("userId", userId))
-                .orderBy(StructuredQuery.OrderBy.asc("date")).build();
-        QueryResults<Entity> results = datastore.run(query);
+        List<Video> result = ObjectifyService.ofy()
+                .load()
+                .type(Video.class)
+                .ancestor(video.getUser())
+                .order("-date")
+                .limit(1).list();
 
-        if(results.hasNext()) {
-            Entity.
-            results.next().key();
+        if(result.size() == 0) {
+            return false;
         }
+
+
+
+        Gson json = new Gson();
+
+        Queue queue = QueueFactory.getQueue("ar-gold-queue");
+        queue.add(TaskOptions.Builder.withUrl("/worker").param("video", json.toJson(result.get(0), Video.class)));
+
+        return true;
+
     }
 }

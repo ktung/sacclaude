@@ -1,7 +1,11 @@
 package com.sacc.entity;
 
-import com.googlecode.objectify.annotation.Entity;
+import com.google.cloud.storage.BlobId;
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.*;
 import com.sacc.entity.FORMAT;
+
+import java.util.Date;
 
 /**
  * Created by djoé on 28/10/2016.
@@ -9,12 +13,16 @@ import com.sacc.entity.FORMAT;
 @Entity
 public class Video {
 
-    private String name;
+    @Id private String name;
     private int duration;
     private FORMAT format;
     private boolean isConverted;
     private String userId;
+    @Parent private Key<User> user;
+    @Index private Date date;
+    private BlobId blobId;
     private STATUS status;
+    private SLA sla;
 
     public String getName() {
         return name;
@@ -63,5 +71,37 @@ public class Video {
 
     public void setStatus(STATUS status) {
         this.status = status;
+    }
+
+    public Key<User> getUser() {
+        return user;
+    }
+
+    public void setUser(Key<User> user) {
+        this.user = user;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public BlobId getBlobId() {
+        return blobId;
+    }
+
+    public void setBlobId(BlobId blobId) {
+        this.blobId = blobId;
+    }
+
+    public SLA getSla() {
+        return sla;
+    }
+
+    public void setSla(SLA sla) {
+        this.sla = sla;
     }
 }

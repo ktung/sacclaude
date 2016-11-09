@@ -6,4 +6,14 @@
         <max-concurrent-requests>1</max-concurrent-requests>
 
     </queue>
+    <queue>
+        <name>ar-gold-queue</name>
+        <rate>10/s</rate>
+
+    </queue>
+    <queue>
+        <name>pending-queue</name>
+        <rate>10/s</rate>
+
+    </queue>
 </queue-entries>

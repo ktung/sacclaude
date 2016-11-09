@@ -5,11 +5,11 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
          version="2.5">
   <servlet>
-    <servlet-name>BronzeServlet</servlet-name>
-    <servlet-class>com.sacc.BronzeServlet</servlet-class>
+    <servlet-name>ArgentGoldServlet</servlet-name>
+    <servlet-class>com.sacc.ArgentGoldServlet</servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>BronzeWorker</servlet-name>
+    <servlet-name>Worker</servlet-name>
     <servlet-class>com.sacc.Worker</servlet-class>
   </servlet>
   <servlet>
@@ -17,12 +17,12 @@
     <servlet-class>com.sacc.servlet.RequestConversionServlet</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>BronzeServlet</servlet-name>
-    <url-pattern>/bronze</url-pattern>
+    <servlet-name>ArgentGoldServlet</servlet-name>
+    <url-pattern>/ArgentGoldServlet</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>BronzeWorker</servlet-name>
-    <url-pattern>/bronzeworker</url-pattern>
+    <servlet-name>Worker</servlet-name>
+    <url-pattern>/worker</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>ConversionServlet</servlet-name>

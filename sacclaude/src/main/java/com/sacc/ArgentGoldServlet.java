@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 /**
  * Created by djoé on 28/10/2016.
  */
-public class BronzeServlet extends HttpServlet {
+public class ArgentGoldServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(Worker.class.getName());
 
     @Override
@@ -26,8 +26,8 @@ public class BronzeServlet extends HttpServlet {
 
         log.info( "Video put in queue");
         // Add the task to the default queue.
-        Queue queue = QueueFactory.getQueue("bronze-queue");
-        queue.add(TaskOptions.Builder.withUrl("/bronzeworker").param("video", video));
+        Queue queue = QueueFactory.getQueue("ar-gold-queue");
+        queue.add(TaskOptions.Builder.withUrl("/worker").param("video", video));
 
         response.sendRedirect("/");
 
