@@ -17,10 +17,6 @@
     <listener-class>com.sacc.Initializer</listener-class>
   </listener>
   <servlet>
-    <servlet-name>ArgentGoldServlet</servlet-name>
-    <servlet-class>com.sacc.ArgentGoldServlet</servlet-class>
-  </servlet>
-  <servlet>
     <servlet-name>Worker</servlet-name>
     <servlet-class>com.sacc.Worker</servlet-class>
   </servlet>
@@ -36,10 +32,6 @@
     <servlet-name>RemoveVideosServlet</servlet-name>
     <servlet-class>com.sacc.servlet.RemoveVideosServlet</servlet-class>
   </servlet>
-  <servlet-mapping>
-    <servlet-name>ArgentGoldServlet</servlet-name>
-    <url-pattern>/ArgentGoldServlet</url-pattern>
-  </servlet-mapping>
   <servlet-mapping>
     <servlet-name>Worker</servlet-name>
     <url-pattern>/worker</url-pattern>

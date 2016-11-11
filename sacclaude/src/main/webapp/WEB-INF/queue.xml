@@ -11,9 +11,4 @@
         <rate>10/s</rate>
 
     </queue>
-    <queue>
-        <name>pending-queue</name>
-        <rate>10/s</rate>
-
-    </queue>
 </queue-entries>

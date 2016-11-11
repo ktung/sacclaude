@@ -22,7 +22,7 @@ public class Video {
     @Index private Date date = new Date();
     private String bucketName;
     private String blobName;
-    private STATUS status;
+    @Index private STATUS status;
     private SLA sla;
 
     public String getName() {
