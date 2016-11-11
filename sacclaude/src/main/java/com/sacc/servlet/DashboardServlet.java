@@ -48,15 +48,17 @@ public class DashboardServlet extends HttpServlet {
             out.append(String.valueOf(videos.size())).append(" videos for ").append(user.getId());
             out.append("<table>");
             out.append("<thead>");
-            out.append("<tr><th>Name</th><th>Duration</th><th>Format</th><th>Status</th></tr>");
+            out.append("<tr><th>Name</th><th>Duration</th><th>Format</th><th>Status</th><th>Link</th></tr>");
             out.append("</thead>");
             out.append("<tbody>");
             for (Video v : videos) {
+                String link = "<a href='https://storage.googleapis.com/sacclaude.appspot.com/"+ v.getBlobName() +"."+ v.getFormat() +"'>"+ v.getBlobName() +"</a>";
                 out.append("<tr>");
                 out.append("<td>").append(v.getName()).append("</td>");
                 out.append("<td>").append(String.valueOf(v.getDuration())).append("</td>");
                 out.append("<td>").append(v.getFormat().name()).append("</td>");
                 out.append("<td>").append(v.getStatus().name()).append("</td>");
+                out.append("<td>").append(link).append("</td>");
                 out.append("</tr>");
             }
             out.append("<tbody>");
