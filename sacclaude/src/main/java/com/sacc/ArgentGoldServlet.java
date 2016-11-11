@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -38,20 +38,22 @@ public class ArgentGoldServlet extends HttpServlet {
         Video video = json.fromJson(videoStr, Video.class);
         User user = json.fromJson(userStr, User.class);
 
+        // liste de video en traitement pour user
         List<Video> inQueueVideos = ObjectifyService.ofy()
                 .load()
                 .type(Video.class)
                 .ancestor(video.getUser())
                 .filter("status", STATUS.CONVERTING).list();
 
-        //video.setDate(LocalDate.now());
+        video.setDate(new Date());
+        // mise en pending
         if(user.getSla() == SLA.ARGENT && inQueueVideos.size() == 3 ||
                 inQueueVideos.size() == 5)
         {
             video.setStatus(STATUS.PENDING);
             ObjectifyService.ofy().save().entity(video).now();
         }
-        else
+        else // triater directement
         {
             video.setStatus(STATUS.CONVERTING);
             ObjectifyService.ofy().save().entity(video).now();

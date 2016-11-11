@@ -56,6 +56,7 @@ public class Worker extends HttpServlet {
         Video video = json.fromJson(videoStr, Video.class);
 
 
+        // récupère les data de la vidéo (on s'en sert pas, mais c'est pour la logique)
         byte[] videoData =storage.get(video.getBlobId()).content();
 
         long msPerSecondVideo = 1000;
@@ -96,17 +97,18 @@ public class Worker extends HttpServlet {
         List<Acl> acls = new ArrayList<>();
         acls.add(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
 
-        storage.delete(video.getBlobId());
-
+        // sauvegarde de la vidéo convertie
         Blob blob =
                 storage.create(
-                        BlobInfo.builder(BUCKET_NAME, video.getName()).acl(acls).build(),
+                        BlobInfo.builder(BUCKET_NAME, video.getName() + "." + video.getFormat().toString()).acl(acls).build(),
                         videoData);
-
 
         video.setStatus(STATUS.DONE);
 
+        // update du statut de la vidéo
         ObjectifyService.ofy().save().entity(video).now();
+
+        // vois si il y a des vidéo en pending
         if(video.getSla() != SLA.BRONZE)
             unpendingVideo(video);
 
@@ -117,6 +119,7 @@ public class Worker extends HttpServlet {
 
     private boolean unpendingVideo(Video video) {
 
+        // list des pidéo en pending pour l'utilisateur
         List<Video> result = ObjectifyService.ofy()
                 .load()
                 .type(Video.class)
@@ -135,6 +138,7 @@ public class Worker extends HttpServlet {
         ObjectifyService.ofy().save().entity(v).now();
         Gson json = new Gson();
 
+        // mise en queue pour traitement
         Queue queue = QueueFactory.getQueue("ar-gold-queue");
         queue.add(TaskOptions.Builder.withUrl("/worker").param("video", json.toJson(v, Video.class)));
 

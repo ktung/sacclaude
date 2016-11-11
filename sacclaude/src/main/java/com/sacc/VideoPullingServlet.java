@@ -53,11 +53,13 @@ public class VideoPullingServlet extends HttpServlet {
         List<Acl> acls = new ArrayList<>();
         acls.add(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
 
+        //on store les data de la vidéo (pour pas les garder en queue inutilement)
         Blob blob =
                 storage.create(
                         BlobInfo.builder(BUCKET_NAME, cr.getName()).acl(acls).build(),
                         cr.getVideo());
 
+        // récupère l'utilisateur qui demande la conversion
         List<User> users = ObjectifyService.ofy()
                 .load()
                 .type(User.class)
@@ -67,7 +69,7 @@ public class VideoPullingServlet extends HttpServlet {
         User user = null;
         if (users.size() == 1)
             user = users.get(0);
-        else
+        else // si il n'existe pas on créé un utilisateur bronze lambda
             user = new User();
 
         Queue queue = null;
@@ -77,6 +79,7 @@ public class VideoPullingServlet extends HttpServlet {
         else
             queue = QueueFactory.getQueue("pending-queue");
 
+        // découpe le requête (une pour chaque format demandé)
         for (FORMAT format : cr.getConvertTypes()) {
             Video video = new Video();
             video.setName(cr.getName());
@@ -91,7 +94,7 @@ public class VideoPullingServlet extends HttpServlet {
                 ObjectifyService.ofy().save().entity(video).now();
                 queue.add(TaskOptions.Builder.withUrl("/worker").param("video", json.toJson(video, Video.class)));
             }
-            else {
+            else { // le worker ArgentGoldServlet est celui qui gère les SLA argent et or
                 ObjectifyService.ofy().save().entity(video).now();
                 queue.add(TaskOptions.Builder.withUrl("/ArgentGoldServlet")
                         .param("video", json.toJson(video, Video.class))
