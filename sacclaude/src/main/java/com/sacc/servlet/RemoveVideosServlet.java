@@ -38,7 +38,7 @@ public class RemoveVideosServlet extends HttpServlet {
 
         for (Video v : videos) {
             if (v.getDate().compareTo(limitDate) <= 0) {
-                storage.delete(v.getBlobId());
+                storage.delete(v.getBucketName(),v.getBlobName());
                 ObjectifyService.ofy().delete().entity(v).now();
             }
         }
