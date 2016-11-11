@@ -20,6 +20,10 @@
     <servlet-name>DashboardServlet</servlet-name>
     <servlet-class>com.sacc.servlet.DashboardServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>RemoveVideosServlet</servlet-name>
+    <servlet-class>com.sacc.servlet.RemoveVideosServlet</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>ArgentGoldServlet</servlet-name>
     <url-pattern>/ArgentGoldServlet</url-pattern>
@@ -35,6 +39,10 @@
   <servlet-mapping>
     <servlet-name>DashboardServlet</servlet-name>
     <url-pattern>/dashboard</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>RemoveVideosServlet</servlet-name>
+    <url-pattern>/tasks/removevideos</url-pattern>
   </servlet-mapping>
   <welcome-file-list>
     <welcome-file>convert.html</welcome-file>

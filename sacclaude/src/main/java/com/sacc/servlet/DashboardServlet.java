@@ -22,10 +22,10 @@ public class DashboardServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String email = request.getParameter("email");
         List<User> users = ObjectifyService.ofy()
-                .load()
-                .type(User.class)
-                .filter("userId", email)
-                .list();
+            .load()
+            .type(User.class)
+            .filter("userId", email)
+            .list();
 
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
