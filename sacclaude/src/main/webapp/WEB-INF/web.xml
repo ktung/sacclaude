@@ -14,7 +14,7 @@
   </servlet>
   <servlet>
     <servlet-name>ConversionServlet</servlet-name>
-    <servlet-class>com.sacc.servlet.RequestConversionServlet</servlet-class>
+    <servlet-class>com.sacc.VideoPullingServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>ArgentGoldServlet</servlet-name>
