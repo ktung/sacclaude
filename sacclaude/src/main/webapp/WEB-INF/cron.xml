@@ -3,6 +3,6 @@
     <cron>
         <url>/tasks/removevideos</url>
         <description>Remove videos</description>
-        <schedule>every 5 minutes</schedule>
+        <schedule>every 1 minutes</schedule>
     </cron>
 </cronentries>
