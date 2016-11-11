@@ -21,11 +21,11 @@ public class DashboardServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String email = request.getParameter("email");
-        List<User> users = ObjectifyService.ofy()
+        User user = ObjectifyService.ofy()
             .load()
             .type(User.class)
-            .filter("userId", email)
-            .list();
+            .id(email)
+            .now();
 
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
@@ -39,8 +39,7 @@ public class DashboardServlet extends HttpServlet {
         out.append("<button>Send</button>");
         out.append("</form>");
 
-        if (1 == users.size()) {
-            User user = users.get(0);
+        if (null != user) {
             List<Video> videos = ObjectifyService.ofy()
                 .load()
                 .type(Video.class)
@@ -60,7 +59,7 @@ public class DashboardServlet extends HttpServlet {
                 out.append("<td>").append(v.getStatus().name()).append("</td>");
                 out.append("</tr>");
             }
-            out.append("tbody>");
+            out.append("<tbody>");
             out.append("</table>");
         } else {
             out.append("User : ").append(email).append(" not found.");
