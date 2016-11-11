@@ -3,6 +3,7 @@ package com.sacc.servlet;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.googlecode.objectify.ObjectifyService;
+import com.sacc.entity.SLA;
 import com.sacc.entity.User;
 import com.sacc.entity.Video;
 
@@ -32,12 +33,19 @@ public class RemoveVideosServlet extends HttpServlet {
             .order("-date")
             .list();
 
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MINUTE, -5);
-        Date limitDate = cal.getTime();
+        Calendar cal5 = Calendar.getInstance();
+        cal5.add(Calendar.MINUTE, -5);
+        Date limitDate5 = cal5.getTime();
+
+        Calendar cal10 = Calendar.getInstance();
+        cal5.add(Calendar.MINUTE, -10);
+        Date limitDate10 = cal10.getTime();
 
         for (Video v : videos) {
-            if (v.getDate().compareTo(limitDate) <= 0) {
+            if (v.getSla() != SLA.GOLD && v.getDate().compareTo(limitDate5) <= 0) {
+                storage.delete(v.getBucketName(),v.getBlobName());
+                ObjectifyService.ofy().delete().entity(v).now();
+            } else if (v.getSla() == SLA.GOLD && v.getDate().compareTo(limitDate10) <= 0) {
                 storage.delete(v.getBucketName(),v.getBlobName());
                 ObjectifyService.ofy().delete().entity(v).now();
             }
