@@ -77,7 +77,7 @@ public class Worker extends HttpServlet {
                 msPerSecondVideo = 1000;
                 break;
             case OGG:
-                msPerSecondVideo = 200;
+                msPerSecondVideo = 250;
                 break;
             case FLV:
                 msPerSecondVideo = 100;
@@ -85,6 +85,7 @@ public class Worker extends HttpServlet {
         }
 
         long t1 = System.currentTimeMillis();
+
 
         try {
             Thread.sleep(msPerSecondVideo * video.getDuration());
@@ -137,11 +138,9 @@ public class Worker extends HttpServlet {
         v.setStatus(STATUS.CONVERTING);
 
         ObjectifyService.ofy().save().entity(v).now();
-        Gson json = new Gson();
-
         // mise en queue pour traitement
         Queue queue = QueueFactory.getQueue("ar-gold-queue");
-        queue.add(TaskOptions.Builder.withUrl("/worker").param("video", json.toJson(v, Video.class)));
+        queue.add(TaskOptions.Builder.withUrl("/worker").param("video", v.getName()).param("user", video.getUserId()));
 
         return true;
 

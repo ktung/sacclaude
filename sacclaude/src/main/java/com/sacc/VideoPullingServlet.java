@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -45,20 +46,14 @@ public class VideoPullingServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
-        BufferedReader reader = request.getReader();
-        String requestVideo = reader.readLine();
-
-        Gson json = new Gson();
-
-
-        ConversionRequest cr = json.fromJson(requestVideo, ConversionRequest.class);
+        ConversionRequest cr = readRequest(request);
 
         List<Acl> acls = new ArrayList<>();
         acls.add(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
 
         byte[] videoData = new byte[1024*cr.getDuration()];
 
-        for(int i = 0 ; i < 1024*1024*cr.getDuration() ; i++)
+        for(int i = 0 ; i < 1024*cr.getDuration() ; i++)
             videoData[i] = '0';
 
         //on store les data de la vidéo (pour pas les garder en queue inutilement)
@@ -89,8 +84,9 @@ public class VideoPullingServlet extends HttpServlet {
         if (user.getSla() == SLA.BRONZE)
             queue = QueueFactory.getQueue("bronze-queue");
         else
-            queue = QueueFactory.getQueue("pending-queue");
+            queue = QueueFactory.getQueue("ar-gold-queue");
 
+        int i = 0;
         // découpe le requête (une pour chaque format demandé)
         for (FORMAT format : cr.getConvertTypes()) {
             Video video = new Video();
@@ -102,21 +98,93 @@ public class VideoPullingServlet extends HttpServlet {
             video.setBucketName(blob.blobId().bucket());
             video.setUser(Key.create(User.class, user.getId()));
             video.setFormat(format);
+            video.setStatus(STATUS.PENDING);
 
-
+            i++;
             if (video.getSla() == SLA.BRONZE) {
                 video.setStatus(STATUS.CONVERTING);
                 ObjectifyService.ofy().save().entity(video).now();
                 queue.add(TaskOptions.Builder.withUrl("/worker").param("video", video.getName()).param("user", video.getUserId()));
             }
             else { // le worker ArgentGoldServlet est celui qui gère les SLA argent et or
-                ObjectifyService.ofy().save().entity(video).now();
-                queue.add(TaskOptions.Builder.withUrl("/ArgentGoldServlet")
-                        .param("video", video.getName()).param("user", video.getUserId()));
+
+                //ObjectifyService.ofy().save().entity(video).now();
+                // liste de video en traitement pour user
+                List<Video> inQueueVideos = ObjectifyService.ofy().cache(false)
+                        .load()
+                        .type(Video.class)
+                        .ancestor(ObjectifyService.ofy().load().key(Key.create(User.class, video.getUserId())).now())
+                        .filter("status", "CONVERTING").list();
+
+
+                video.setDate(new Date());
+                // mise en pending
+                if(video.getSla() == SLA.ARGENT && inQueueVideos.size() >= 3 ||
+                        inQueueVideos.size() >= 5)
+                {
+                    video.setStatus(STATUS.PENDING);
+                    ObjectifyService.ofy().save().entity(video).now();
+                }
+                else // triater directement
+                {
+                    video.setStatus(STATUS.CONVERTING);
+                    ObjectifyService.ofy().save().entity(video).now();
+                    // Add the task to the default queue.
+                    queue.add(TaskOptions.Builder.withUrl("/worker").param("video", video.getName()).param("user", video.getUserId()));
+                }
             }
 
         }
 
+    }
+
+    private  ConversionRequest readRequest(HttpServletRequest request)
+    {
+        ConversionRequest newRequest = new ConversionRequest();
+
+        // First building the ConversionRequest
+        String mailAddress = request.getParameter("mail");
+        newRequest.setMailAddress(mailAddress);
+
+        SLA sla = SLA.BRONZE;
+
+        switch ( request.getParameter("sla")){
+            case "bronze":
+                sla = SLA.BRONZE;
+                break;
+            case "argent":
+                sla = SLA.ARGENT;
+                break;
+            case "gold":
+                sla = SLA.GOLD;
+                break;
+        }
+
+        newRequest.setSla(sla);
+
+        String name = request.getParameter("name");
+        newRequest.setName(name);
+
+        Integer duration = Integer.parseInt(request.getParameter("duration"));
+        newRequest.setDuration(duration);
+
+        if(("aviConvert").equals(request.getParameter("avi"))){
+            newRequest.addConvertType(FORMAT.AVI);
+        }
+        if(("mpegConvert").equals(request.getParameter("mpeg"))){
+            newRequest.addConvertType(FORMAT.MPEG4);
+        }
+        if(("mkvConvert").equals(request.getParameter("mkv"))){
+            newRequest.addConvertType(FORMAT.MKV);
+        }
+        if(("oggConvert").equals(request.getParameter("ogg"))){
+            newRequest.addConvertType(FORMAT.OGG);
+        }
+        if(("flvConvert").equals(request.getParameter("flv"))){
+            newRequest.addConvertType(FORMAT.FLV);
+        }
+
+        return newRequest;
     }
 
 }
