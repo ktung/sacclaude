@@ -16,6 +16,10 @@
     <servlet-name>ConversionServlet</servlet-name>
     <servlet-class>com.sacc.VideoPullingServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>DashboardServlet</servlet-name>
+    <servlet-class>com.sacc.servlet.DashboardServlet</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>ArgentGoldServlet</servlet-name>
     <url-pattern>/ArgentGoldServlet</url-pattern>
@@ -28,7 +32,19 @@
     <servlet-name>ConversionServlet</servlet-name>
     <url-pattern>/requestConversion</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>DashboardServlet</servlet-name>
+    <url-pattern>/dashboard</url-pattern>
+  </servlet-mapping>
   <welcome-file-list>
     <welcome-file>convert.html</welcome-file>
   </welcome-file-list>
+  <filter>
+    <filter-name>ObjectifyFilter</filter-name>
+    <filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>ObjectifyFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
 </web-app>
