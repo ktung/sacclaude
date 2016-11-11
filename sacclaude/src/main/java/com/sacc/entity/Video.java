@@ -19,8 +19,9 @@ public class Video {
     private boolean isConverted;
     private String userId;
     @Parent private Key<User> user;
-    @Index private Date date;
-    private BlobId blobId;
+    @Index private Date date = new Date();
+    private String bucketName;
+    private String blobName;
     private STATUS status;
     private SLA sla;
 
@@ -89,13 +90,6 @@ public class Video {
         this.date = date;
     }
 
-    public BlobId getBlobId() {
-        return blobId;
-    }
-
-    public void setBlobId(BlobId blobId) {
-        this.blobId = blobId;
-    }
 
     public SLA getSla() {
         return sla;
@@ -103,5 +97,21 @@ public class Video {
 
     public void setSla(SLA sla) {
         this.sla = sla;
+    }
+
+    public String getBucketName() {
+        return bucketName;
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
+    }
+
+    public String getBlobName() {
+        return blobName;
+    }
+
+    public void setBlobName(String blobName) {
+        this.blobName = blobName;
     }
 }

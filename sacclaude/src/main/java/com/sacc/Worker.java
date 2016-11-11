@@ -4,13 +4,15 @@ package com.sacc;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.cloud.datastore.*;
+import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.storage.Acl;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.gson.Gson;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
 import com.sacc.entity.SLA;
 import com.sacc.entity.STATUS;
@@ -20,6 +22,7 @@ import com.sacc.entity.Video;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +42,8 @@ public class Worker extends HttpServlet {
     public void init() {
         storage = StorageOptions.defaultInstance().service();
         datastore = DatastoreOptions.defaultInstance().service();
-        ObjectifyService.register(Video.class);
-        ObjectifyService.register(User.class);
+        /*ObjectifyService.register(Video.class);
+        ObjectifyService.register(User.class);*/
     }
 
 
@@ -49,15 +52,16 @@ public class Worker extends HttpServlet {
             throws IOException {
 
         String videoStr = request.getParameter("video");
+        String userId = request.getParameter("user");
 
-        Gson json = new Gson();
+        Key<User> keyUser = Key.create(User.class, userId);
+        Video video = ObjectifyService.ofy().cache(false).load().key(Key.create(keyUser, Video.class, videoStr)).now();
 
-        log.info("Video descriptor : " + videoStr);
-        Video video = json.fromJson(videoStr, Video.class);
-
+        if(video == null)
+            throw new IOException(videoStr);
 
         // récupère les data de la vidéo (on s'en sert pas, mais c'est pour la logique)
-        byte[] videoData =storage.get(video.getBlobId()).content();
+        byte[] videoData =storage.get(video.getBucketName(), video.getBlobName()).content();
 
         long msPerSecondVideo = 1000;
 
@@ -100,8 +104,8 @@ public class Worker extends HttpServlet {
         // sauvegarde de la vidéo convertie
         Blob blob =
                 storage.create(
-                        BlobInfo.builder(BUCKET_NAME, video.getName() + "." + video.getFormat().toString()).acl(acls).build(),
-                        videoData);
+                        BlobInfo.builder(BUCKET_NAME, video.getName()).acl(acls).build(),
+                        new ByteArrayInputStream(videoData));
 
         video.setStatus(STATUS.DONE);
 
@@ -112,9 +116,6 @@ public class Worker extends HttpServlet {
         if(video.getSla() != SLA.BRONZE)
             unpendingVideo(video);
 
-        // return the public download link
-        response.getWriter().print(blob.mediaLink());
-
     }
 
     private boolean unpendingVideo(Video video) {
@@ -123,7 +124,7 @@ public class Worker extends HttpServlet {
         List<Video> result = ObjectifyService.ofy()
                 .load()
                 .type(Video.class)
-                .ancestor(video.getUser())
+                .ancestor(ObjectifyService.ofy().load().key(Key.create(User.class, video.getUserId())).now())
                 .filter("status", STATUS.PENDING)
                 .order("-date")
                 .limit(1).list();

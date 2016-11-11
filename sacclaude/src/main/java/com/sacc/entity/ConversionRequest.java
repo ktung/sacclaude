@@ -17,7 +17,6 @@ public class ConversionRequest {
 
     private List<FORMAT> convertTypes;
 
-    private byte[] video;
 
     public ConversionRequest(){
         convertTypes = new ArrayList<>();
@@ -78,11 +77,5 @@ public class ConversionRequest {
                 '}';
     }
 
-    public byte[] getVideo() {
-        return video;
-    }
 
-    public void setVideo(byte[] video) {
-        this.video = video;
-    }
 }

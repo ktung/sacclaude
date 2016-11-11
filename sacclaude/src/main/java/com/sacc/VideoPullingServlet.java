@@ -7,6 +7,7 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.storage.*;
 import com.google.gson.Gson;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
 import com.sacc.entity.*;
 
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +35,9 @@ public class VideoPullingServlet extends HttpServlet {
     public void init() {
         storage = StorageOptions.defaultInstance().service();
         datastore = DatastoreOptions.defaultInstance().service();
-        ObjectifyService.register(Video.class);
+        /*ObjectifyService.register(Video.class);
         ObjectifyService.register(User.class);
+        ObjectifyService.begin();*/
     }
 
 
@@ -53,12 +56,17 @@ public class VideoPullingServlet extends HttpServlet {
         List<Acl> acls = new ArrayList<>();
         acls.add(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
 
-        //on store les data de la vidéo (pour pas les garder en queue inutilement)
-        Blob blob =
-                storage.create(
-                        BlobInfo.builder(BUCKET_NAME, cr.getName()).acl(acls).build(),
-                        cr.getVideo());
+        byte[] videoData = new byte[1024*cr.getDuration()];
 
+        for(int i = 0 ; i < 1024*1024*cr.getDuration() ; i++)
+            videoData[i] = '0';
+
+        //on store les data de la vidéo (pour pas les garder en queue inutilement)
+        Blob blob = storage.create(
+                        BlobInfo.builder(BUCKET_NAME, cr.getName()).acl(acls).build(),
+                        new ByteArrayInputStream(videoData));
+
+        /*
         // récupère l'utilisateur qui demande la conversion
         List<User> users = ObjectifyService.ofy()
                 .load()
@@ -70,8 +78,12 @@ public class VideoPullingServlet extends HttpServlet {
         if (users.size() == 1)
             user = users.get(0);
         else // si il n'existe pas on créé un utilisateur bronze lambda
-            user = new User();
+            user = new User();*/
 
+        User user = new User();
+        user.setId(cr.getMailAddress());
+        user.setSla(cr.getSla());
+        ObjectifyService.ofy().save().entity(user).now();
         Queue queue = null;
 
         if (user.getSla() == SLA.BRONZE)
@@ -82,23 +94,25 @@ public class VideoPullingServlet extends HttpServlet {
         // découpe le requête (une pour chaque format demandé)
         for (FORMAT format : cr.getConvertTypes()) {
             Video video = new Video();
-            video.setName(cr.getName());
+            video.setName(cr.getName()+"."+format.toString());
             video.setUserId(cr.getMailAddress());
             video.setDuration(cr.getDuration());
             video.setSla(user.getSla());
-            video.setBlobId(blob.blobId());
+            video.setBlobName(blob.blobId().name());
+            video.setBucketName(blob.blobId().bucket());
+            video.setUser(Key.create(User.class, user.getId()));
+            video.setFormat(format);
 
 
             if (video.getSla() == SLA.BRONZE) {
                 video.setStatus(STATUS.CONVERTING);
                 ObjectifyService.ofy().save().entity(video).now();
-                queue.add(TaskOptions.Builder.withUrl("/worker").param("video", json.toJson(video, Video.class)));
+                queue.add(TaskOptions.Builder.withUrl("/worker").param("video", video.getName()).param("user", video.getUserId()));
             }
             else { // le worker ArgentGoldServlet est celui qui gère les SLA argent et or
                 ObjectifyService.ofy().save().entity(video).now();
                 queue.add(TaskOptions.Builder.withUrl("/ArgentGoldServlet")
-                        .param("video", json.toJson(video, Video.class))
-                        .param("user", json.toJson(user, User.class)));
+                        .param("video", video.getName()).param("user", video.getUserId()));
             }
 
         }

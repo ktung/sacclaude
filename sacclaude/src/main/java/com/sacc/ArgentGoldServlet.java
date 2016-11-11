@@ -4,6 +4,7 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.gson.Gson;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
 import com.sacc.entity.SLA;
 import com.sacc.entity.STATUS;
@@ -25,18 +26,20 @@ import java.util.logging.Logger;
 public class ArgentGoldServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(Worker.class.getName());
 
+
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
+
+
         String videoStr = request.getParameter("video");
-        String userStr = request.getParameter("user");
+        String userId = request.getParameter("user");
 
-        Gson json = new Gson();
+        Video video = ObjectifyService.ofy().cache(false).load()
+                .key(Key.create(Key.create(User.class, userId), Video.class, videoStr))
+                .now();
 
-
-        Video video = json.fromJson(videoStr, Video.class);
-        User user = json.fromJson(userStr, User.class);
 
         // liste de video en traitement pour user
         List<Video> inQueueVideos = ObjectifyService.ofy()
@@ -47,7 +50,7 @@ public class ArgentGoldServlet extends HttpServlet {
 
         video.setDate(new Date());
         // mise en pending
-        if(user.getSla() == SLA.ARGENT && inQueueVideos.size() == 3 ||
+        if(video.getSla() == SLA.ARGENT && inQueueVideos.size() == 3 ||
                 inQueueVideos.size() == 5)
         {
             video.setStatus(STATUS.PENDING);
@@ -59,10 +62,9 @@ public class ArgentGoldServlet extends HttpServlet {
             ObjectifyService.ofy().save().entity(video).now();
             // Add the task to the default queue.
             Queue queue = QueueFactory.getQueue("ar-gold-queue");
-            queue.add(TaskOptions.Builder.withUrl("/worker").param("video", json.toJson(video, Video.class)));
+            queue.add(TaskOptions.Builder.withUrl("/worker").param("video", video.getName()).param("user", video.getUserId()));
         }
 
-        response.sendRedirect("/");
 
     }
 }
