@@ -136,6 +136,8 @@ public class VideoPullingServlet extends HttpServlet {
 
         }
 
+        response.sendRedirect("/");
+
     }
 
     private  ConversionRequest readRequest(HttpServletRequest request)
